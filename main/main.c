@@ -26,13 +26,56 @@ static void init_keypad(void);
 // declare function for scanning keypad
 static char scan_keypad(void);
 
-void app_main(void)
-{
+void app_main(void) {
+    
     init_keypad();
     
+    typedef enum {
+        WAIT_FOR_PRESS,
+        DEBOUNCE,
+        WAIT_FOR_RELEASE
+    } State_t;
+    State_t state;
+
     while(true){
-        printf("%c", scan_keypad());
-        vTaskDelay(20/portTICK_PERIOD_MS);
+        char new_key = scan_keypad();
+        int time;
+        char last_key;
+        state = WAIT_FOR_PRESS;  // set initial state
+        switch(state){
+            case WAIT_FOR_PRESS:
+                if(new_key != NOPRESS){
+                    time = 0;
+                    last_key = new_key;
+                    state = DEBOUNCE;
+                } else {
+                    state = WAIT_FOR_PRESS;
+                }
+                break;
+            case DEBOUNCE:
+                bool timed_out = (time == DEBOUNCE_TIME);
+                if(!timed_out){
+                    vTaskDelay(LOOP_DELAY_MS/portTICK_PERIOD_MS);
+                    time += LOOP_DELAY_MS;
+                    state = DEBOUNCE;
+                }
+                else if(timed_out && new_key != last_key){
+                    state = WAIT_FOR_PRESS;
+                }
+                else if(timed_out && new_key == last_key){
+                    state = WAIT_FOR_RELEASE;
+                }
+                break;
+            case WAIT_FOR_RELEASE:
+                if(new_key != NOPRESS){
+                    state = WAIT_FOR_RELEASE;
+                }
+                else if(new_key == NOPRESS){
+                    printf("%c\n", last_key);
+                    state = WAIT_FOR_PRESS;
+                }
+                break;
+        }
     }
 }
 
