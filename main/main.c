@@ -30,7 +30,7 @@ static void init_keypad(void);
 static char scan_keypad(void);
 
 void app_main(void) {
-    
+    printf("appmain");
     init_keypad();
     
     typedef enum {
@@ -41,12 +41,13 @@ void app_main(void) {
     State_t state;
 
     state = WAIT_FOR_PRESS;  // set initial state
+    char new_key;
+    int time;
+    char last_key;
 
     while(true){
         vTaskDelay(10/portTICK_PERIOD_MS);
-        char new_key = scan_keypad();
-        int time;
-        char last_key;
+        new_key = scan_keypad();
         switch(state){
             case WAIT_FOR_PRESS:
                 printf("WAIT_FOR_PRESS");
