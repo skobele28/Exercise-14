@@ -115,6 +115,7 @@ char scan_keypad(void){
             }
         }
         gpio_set_level(row_pins[row], !ACTIVE);
+        vTaskDelay(10/portTICK_PERIOD_MS);
     }
     return key_char;
 }
