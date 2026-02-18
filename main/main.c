@@ -1,5 +1,8 @@
 #include "driver/gpio.h"
 #include "freertos/FreeRTOS.h"
+#include <stdio.h>
+#include <sdkconfig.h>
+#include <stdbool.h>
 
 #define LOOP_DELAY_MS           10      // Loop sampling time (ms)
 #define DEBOUNCE_TIME           40      // Debounce time (ms)
@@ -37,13 +40,16 @@ void app_main(void) {
     } State_t;
     State_t state;
 
+    state = WAIT_FOR_PRESS;  // set initial state
+
     while(true){
+        vTaskDelay(10/portTICK_PERIOD_MS);
         char new_key = scan_keypad();
         int time;
         char last_key;
-        state = WAIT_FOR_PRESS;  // set initial state
         switch(state){
             case WAIT_FOR_PRESS:
+                printf("WAIT_FOR_PRESS");
                 if(new_key != NOPRESS){
                     time = 0;
                     last_key = new_key;
@@ -53,6 +59,7 @@ void app_main(void) {
                 }
                 break;
             case DEBOUNCE:
+                printf("DEBOUNCE");
                 bool timed_out = (time == DEBOUNCE_TIME);
                 if(!timed_out){
                     vTaskDelay(LOOP_DELAY_MS/portTICK_PERIOD_MS);
@@ -67,6 +74,7 @@ void app_main(void) {
                 }
                 break;
             case WAIT_FOR_RELEASE:
+                printf("WAIT_FOR_RELEASE");
                 if(new_key != NOPRESS){
                     state = WAIT_FOR_RELEASE;
                 }
@@ -115,7 +123,7 @@ char scan_keypad(void){
             }
         }
         gpio_set_level(row_pins[row], !ACTIVE);
-        vTaskDelay(10/portTICK_PERIOD_MS);
     }
+    //vTaskDelay(10/portTICK_PERIOD_MS);
     return key_char;
 }
