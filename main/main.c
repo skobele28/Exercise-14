@@ -30,7 +30,6 @@ static void init_keypad(void);
 static char scan_keypad(void);
 
 void app_main(void) {
-    printf("appmain");
     init_keypad();
     
     typedef enum {
@@ -50,7 +49,6 @@ void app_main(void) {
         new_key = scan_keypad();
         switch(state){
             case WAIT_FOR_PRESS:
-                printf("WAIT_FOR_PRESS");
                 if(new_key != NOPRESS){
                     time = 0;
                     last_key = new_key;
@@ -60,7 +58,6 @@ void app_main(void) {
                 }
                 break;
             case DEBOUNCE:
-                printf("DEBOUNCE");
                 bool timed_out = (time == DEBOUNCE_TIME);
                 if(!timed_out){
                     vTaskDelay(LOOP_DELAY_MS/portTICK_PERIOD_MS);
@@ -75,7 +72,6 @@ void app_main(void) {
                 }
                 break;
             case WAIT_FOR_RELEASE:
-                printf("WAIT_FOR_RELEASE");
                 if(new_key != NOPRESS){
                     state = WAIT_FOR_RELEASE;
                 }
@@ -125,6 +121,5 @@ char scan_keypad(void){
         }
         gpio_set_level(row_pins[row], !ACTIVE);
     }
-    //vTaskDelay(10/portTICK_PERIOD_MS);
     return key_char;
 }
